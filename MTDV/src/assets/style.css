@@ -9,20 +9,6 @@ footer {visibility: hidden;}
 .stMainBlockContainer {padding-top: 0.5rem;}
 section.main > div.block-container {padding-top: 0.5rem;}
 
-/* Header: logo centrado con altura controlada */
-.header-logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0.25rem 0 0.5rem 0;
-}
-.header-logo img {
-    max-height: 140px;    /* ajusta a tu gusto */
-    width: auto !important;
-    height: auto;
-    object-fit: contain;
-}
-
 /* Título centrado */
 .titulo-bienvenida {
     text-align: center;
