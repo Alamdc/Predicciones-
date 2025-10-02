@@ -1,19 +1,18 @@
 import os
 from PIL import Image
 import streamlit as st
-from src.ui_common import load_css, render_navbar
+from src.ui_common import load_css, render_navbar # Importa funciones comunes de UI
 
-st.set_page_config(page_title="Sistema de Traslado de Valores", layout="wide")
+st.set_page_config(page_title="Sistema de Traslado de Valores", layout="wide") # asignamos el título y el layout
 
 # CSS
-load_css() 
+load_css() # Carga el modulo CSS
 
 # NAVBAR 
-render_navbar(active="inicio")
+render_navbar(active="inicio") # Carga el modulo NAVBAR
 
 
-st.markdown('<div class="titulo-bienvenida">Bienvenido al Sistema de Traslado de Valores</div>', unsafe_allow_html=True)
-
+st.markdown('<div class="titulo-bienvenida">Bienvenido al Sistema de Traslado de Valores</div>', unsafe_allow_html=True)  # Título de bienvenida
 
 
 # Contenido de bienvenida 
@@ -26,3 +25,9 @@ st.markdown(
     - Asignar rangos por sucursal y calcular fecha/monto de transferencia.
     """
 )
+
+"""from src.db.db import run_query
+df = run_query("SELECT * FROM data.data_base LIMIT 10;")
+
+if not df.empty:
+    st.dataframe(df)"""

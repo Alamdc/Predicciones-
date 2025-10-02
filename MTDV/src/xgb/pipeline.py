@@ -4,7 +4,7 @@ from .data import load_and_clean
 from .features import build_feature_table
 from .model import train_models, forecast_horizon, TrainResult
 
-
+# Entrena modelos por sucursal si tienen suficientes datos históricos
 def _per_branch_training(
     df_feat: pd.DataFrame,
     feature_cols: List[str],
@@ -34,7 +34,7 @@ def _per_branch_training(
             continue
     return models
 
-
+# Función principal para entrenar y predecir
 def train_and_forecast(
     df: pd.DataFrame,
     horizon: int = 7,

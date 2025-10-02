@@ -3,13 +3,13 @@ import numpy as np
 from typing import List, Tuple
 from datetime import timedelta
 
-try:
+try:        
     import holidays as _hol
     _MX_HOL = _hol.country_holidays("MX")
 except Exception:
     _MX_HOL = None
 
-def add_calendar(df: pd.DataFrame) -> pd.DataFrame:
+def add_calendar(df: pd.DataFrame) -> pd.DataFrame: # Añade señales de calendario a df con columna 'fecha'
     df = df.copy()
     if "dia_semana" not in df.columns:
         df["dia_semana"] = df["fecha"].dt.weekday
@@ -29,7 +29,7 @@ def add_calendar(df: pd.DataFrame) -> pd.DataFrame:
             df["festivo_mx"] = 0
     return df
 
-def _group_rolling(df: pd.DataFrame, group_col: str, target: str, lags: List[int], mas: List[int]) -> pd.DataFrame:
+def _group_rolling(df: pd.DataFrame, group_col: str, target: str, lags: List[int], mas: List[int]) -> pd.DataFrame: # Añade lags y medias móviles por grupo
     df = df.copy()
     for L in sorted(set(lags)):
         df[f"{target}_lag_{L}"] = df.groupby(group_col, observed=False)[target].shift(L)
@@ -41,19 +41,19 @@ def _group_rolling(df: pd.DataFrame, group_col: str, target: str, lags: List[int
     return df
 
 #  ENTRADAS/SALIDAS 
-def build_feature_table(
+def build_feature_table(    # Crea tabla de entrenamiento para 'entradas' y 'salidas' con lags/MAs por sucursal
     df: pd.DataFrame,
     lags: List[int] = [1,2,3,5],
     mas:  List[int] = [3,5,10,14],
 ):
-    df = add_calendar(df)
+    df = add_calendar(df)   # Añade señales de calendario
     df["id_sucursal"] = df["id_sucursal"].astype("category")
     df["nombre_estado"] = df["nombre_estado"].astype("category")
 
     df = _group_rolling(df, "id_sucursal", "entradas", lags, mas)
     df = _group_rolling(df, "id_sucursal", "salidas",  lags, mas)
 
-    base_feats = [
+    base_feats = [  # arreglo de columnas base
         "id_sucursal","nombre_estado",
         "dia_semana","semana_año","mes","año","trimestre","festivo_mx",
     ]
@@ -84,10 +84,9 @@ def build_flujo_feature_table(
     lags: List[int] = [1,2,3,5],
     mas:  List[int] = [3,5,10,14],
 ) -> Tuple[pd.DataFrame, List[str]]:
-    """
-    Crea tabla de entrenamiento para 'flujo_efectivo' con lags/MAs por sucursal,
-    más señales de calendario. Devuelve (df_features, feature_cols).
-    """
+
+   # Crea tabla de entrenamiento para 'flujo_efectivo' con lags/MAs por sucursal,
+    #más señales de calendario. Devuelve (df_features, feature_cols).
     df = add_calendar(df)
     df["id_sucursal"] = df["id_sucursal"].astype("category")
     df["nombre_estado"] = df["nombre_estado"].astype("category")
@@ -116,7 +115,7 @@ def build_flujo_feature_table(
     usable = tmp.dropna(subset=[c for c in feat_cols if ("lag_" in c) or ("media_movil_" in c)]).copy()
     return usable, feat_cols
 
-def build_future_frame_per_branch(
+def build_future_frame_per_branch(      # Crea DataFrame futuro para predicción por sucursal, excluyendo no laborales
     last_row: pd.Series,
     horizon: int,
     non_working_days: tuple[int, ...] = (6,),  # 6=domingo

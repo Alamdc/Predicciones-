@@ -1,15 +1,16 @@
 import os
 import streamlit as st
 
-def load_css(style_path: str = "src/assets/style.css"):
+# Funciones comunes de UI
+def load_css(style_path: str = "src/assets/style.css"): # función para cargar CSS
     if os.path.exists(style_path):
         with open(style_path) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True) # Carga el CSS en la app
 
+# función para renderizar la barra de navegación
 def render_navbar(active: str = "inicio"):
-    """
-    Renderiza navbar horizontal nativa de Streamlit con page_link.
-    """
+
+#Renderiza navbar horizontal nativa de Streamlit con page_link.
     col1, col2, col3, _ = st.columns([1,1,1,6])
 
     with col1:

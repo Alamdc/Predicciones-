@@ -1,8 +1,9 @@
 import streamlit as st
-from .data_utils import cargar_csv, validar_columnas, normalizar_ids
-from .config import COLUMNAS_RECIENTES_REQUERIDAS, COLUMNAS_FUTURO_REQUERIDAS
-from .logic import calcular_resultado
+from .data_utils import cargar_csv, validar_columnas, normalizar_ids # Importa utilidades de datos
+from .config import COLUMNAS_RECIENTES_REQUERIDAS, COLUMNAS_FUTURO_REQUERIDAS # Importa configuración y constantes
+from .logic import calcular_resultado # Importa lógica central
 
+# Función principal para renderizar la página de Rangos
 def render_rangos_page():
     col1, col2 = st.columns(2)
     with col1:
@@ -18,7 +19,7 @@ def render_rangos_page():
         tabla1 = cargar_csv(tabla1_file, "datos recientes")
         tabla2 = cargar_csv(tabla2_file, "flujo futuro")
 
-        if tabla1 is not None and tabla2 is not None:
+        if tabla1 is not None and tabla2 is not None:   
             tabla1 = normalizar_ids(tabla1)
             tabla2 = normalizar_ids(tabla2)
 

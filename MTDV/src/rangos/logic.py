@@ -1,10 +1,10 @@
 import pandas as pd
-from .config import RANGOS
+from .config import RANGOS # Importa configuración y constantes
 
+# Funciones centrales de lógica para Rangos
 def calcular_ultimo_saldo(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Mapeo: es_captadora==0 → 'pagadora'; es_captadora==1 → 'captadora'.
-    """
+
+#Mapeo: es_captadora==0 → 'pagadora'; es_captadora==1 → 'captadora'.
     ultimo = (
         df.sort_values("fecha")
         .groupby("id_sucursal")
@@ -17,16 +17,15 @@ def calcular_ultimo_saldo(df: pd.DataFrame) -> pd.DataFrame:
     )
     return ultimo
 
+#Función para calcular promedios de entradas, salidas, flujo_efectivo y métricas derivadas
 def promedios_ultimos_n(df: pd.DataFrame, n: int = 30) -> pd.DataFrame:
-    """
-    Promedios usando los últimos N registros por sucursal.
-    """
+    #Promedios usando los últimos N registros por sucursal.
     df = df.copy()
     df["id_sucursal"] = df["id_sucursal"].astype(str)
     df = df.sort_values(["id_sucursal", "fecha"])
     ultimos = df.groupby("id_sucursal").tail(n)
 
-    prom = (
+    prom = (        # Promedios por sucursal
         ultimos.groupby("id_sucursal")
         .agg({
             "entradas": "mean",
@@ -47,6 +46,7 @@ def promedios_ultimos_n(df: pd.DataFrame, n: int = 30) -> pd.DataFrame:
     )
     return prom
 
+#función para asignar rango basado en tipo, tamaño de flujo e índice de actividad
 def asignar_rango(row) -> str:
     tipo = row["tipo"]
     tam_flujo = row["tamaño_flujo"]
@@ -70,6 +70,7 @@ def asignar_rango(row) -> str:
         return keys[idx + 1]
     return asignado
 
+# Función para encontrar día de transferencia y monto requerido
 def encontrar_dia_transferencia_y_monto(
     id_sucursal: str,
     tipo: str,
@@ -111,7 +112,7 @@ def encontrar_dia_transferencia_y_monto(
     transferencia = round(punto_medio - saldo_final_proyectado, 2)
 
     return fecha_salida, transferencia
-
+# Función auxiliar para sumar flujo futuro y obtener último estado
 def _suma_total_futuro_y_nombre(tabla_futuro: pd.DataFrame) -> pd.DataFrame:
     fut = tabla_futuro.copy()
     fut["id_sucursal"] = fut["id_sucursal"].astype(str)
@@ -121,7 +122,7 @@ def _suma_total_futuro_y_nombre(tabla_futuro: pd.DataFrame) -> pd.DataFrame:
     last_state = fut.groupby("id_sucursal").tail(1)[["id_sucursal", "nombre_estado"]]
     aux = suma.merge(last_state, on="id_sucursal", how="left")
     return aux
-
+#función principal para calcular todo el resultado
 def calcular_resultado(df_recientes: pd.DataFrame, df_futuro: pd.DataFrame, n: int = 30) -> pd.DataFrame:
     ult = calcular_ultimo_saldo(df_recientes)
     prom = promedios_ultimos_n(df_recientes, n=n)

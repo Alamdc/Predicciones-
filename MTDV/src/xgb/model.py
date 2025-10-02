@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 
 
-@dataclass
+@dataclass # Resultado del entrenamiento de modelos
 class TrainResult:
     model_entradas: xgb.Booster
     model_salidas: xgb.Booster
@@ -16,7 +16,7 @@ class TrainResult:
     features: List[str]
 
 
-def _time_split(df: pd.DataFrame, valid_days: int = 28) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def _time_split(df: pd.DataFrame, valid_days: int = 28) -> Tuple[pd.DataFrame, pd.DataFrame]: # División temporal de validación
     max_date = df["fecha"].max()
     split_day = max_date - pd.Timedelta(days=valid_days)
     train = df[df["fecha"] <= split_day].copy()
@@ -24,7 +24,7 @@ def _time_split(df: pd.DataFrame, valid_days: int = 28) -> Tuple[pd.DataFrame, p
     return train, valid
 
 
-def _winsorize_per_branch(df: pd.DataFrame, cols: List[str], low_q=0.005, high_q=0.995) -> pd.DataFrame:
+def _winsorize_per_branch(df: pd.DataFrame, cols: List[str], low_q=0.005, high_q=0.995) -> pd.DataFrame:    # Winsorización por sucursal
     df = df.copy()
     for col in cols:
         q = df.groupby("id_sucursal", observed=False)[col].quantile([low_q, high_q]).unstack()
@@ -35,7 +35,7 @@ def _winsorize_per_branch(df: pd.DataFrame, cols: List[str], low_q=0.005, high_q
     return df
 
 
-def _to_dmatrix(X: pd.DataFrame, y: pd.Series | None = None) -> xgb.DMatrix:
+def _to_dmatrix(X: pd.DataFrame, y: pd.Series | None = None) -> xgb.DMatrix:    # Convierte DataFrame a DMatrix de XGBoost
     return xgb.DMatrix(
         data=X,
         label=None if y is None else y.values,
@@ -43,7 +43,7 @@ def _to_dmatrix(X: pd.DataFrame, y: pd.Series | None = None) -> xgb.DMatrix:
     )
 
 
-def _best_pred(bst: xgb.Booster, d: xgb.DMatrix) -> np.ndarray:
+def _best_pred(bst: xgb.Booster, d: xgb.DMatrix) -> np.ndarray:     # Predicciones con la mejor iteración (si aplica)
     try:
         bi = bst.best_iteration
         if bi is not None:
@@ -53,7 +53,7 @@ def _best_pred(bst: xgb.Booster, d: xgb.DMatrix) -> np.ndarray:
     return bst.predict(d)
 
 
-def _fit_one_booster(
+def _fit_one_booster(           # Entrena un modelo XGBoost para una variable objetivo
     train_df: pd.DataFrame,
     valid_df: pd.DataFrame,
     y_col: str,
@@ -63,7 +63,7 @@ def _fit_one_booster(
     num_boost_round: int,
     es_rounds: int
 ) -> Tuple[xgb.Booster, float]:
-    params = {
+    params = {  # Parámetros por defecto de XGBoost
         "objective": "reg:squarederror",
         "learning_rate": 0.05,
         "max_depth": 6,
@@ -82,10 +82,10 @@ def _fit_one_booster(
     Xtr, ytr = train_df[feature_cols], train_df[y_col]
     Xva, yva = valid_df[feature_cols], valid_df[y_col]
 
-    dtr = _to_dmatrix(Xtr, ytr)
+    dtr = _to_dmatrix(Xtr, ytr) 
     dva = _to_dmatrix(Xva, yva)
 
-    bst = xgb.train(
+    bst = xgb.train(    # Entrenamiento del modelo XGBoost
         params=params,
         dtrain=dtr,
         num_boost_round=int(num_boost_round),
@@ -94,13 +94,13 @@ def _fit_one_booster(
         verbose_eval=False,
     )
 
-    preds = _best_pred(bst, dva)
-    mse = mean_squared_error(yva, preds)
+    preds = _best_pred(bst, dva)    # Predicciones en validación
+    mse = mean_squared_error(yva, preds) # Error cuadrático medio
     rmse = np.sqrt(mse)
-    return bst, rmse
+    return bst, rmse    # Retorna el modelo y el RMSE
 
 
-def train_models(
+def train_models(       # Entrena modelos XGBoost para entradas y salidas
     df_feat: pd.DataFrame,
     feature_cols: List[str],
     valid_days: int = 28,
@@ -109,8 +109,8 @@ def train_models(
     xgb_params_override: dict | None = None,
     num_boost_round: int = 5000,
     early_stopping_rounds: int = 200
-) -> TrainResult:
-    work = df_feat.copy()
+) -> TrainResult:   
+    work = df_feat.copy()   
     if winsorize:
         work = _winsorize_per_branch(work, ["entradas","salidas"])
 
@@ -136,7 +136,7 @@ def train_models(
     )
 
 
-def _advance_day_features(
+def _advance_day_features(  # Avanza un día en las features para predicción autoregresiva
     last_rows: pd.DataFrame,
     new_date: pd.Timestamp,
     lags: List[int],
@@ -157,7 +157,7 @@ def _advance_day_features(
     except Exception:
         df["festivo_mx"] = 0
 
-    def shift_lags(prefix: str):
+    def shift_lags(prefix: str):    # Actualiza lags y medias móviles
         sorted_lags = sorted(set(lags))
         for i in reversed(sorted_lags):
             if i == 1:
@@ -176,10 +176,10 @@ def _advance_day_features(
     shift_lags("entradas")
     shift_lags("salidas")
 
-    return df
+    return df   # Retorna el DataFrame con las features actualizadas
 
 
-def forecast_horizon(
+def forecast_horizon(   # Genera pronóstico para un horizonte dado usando modelos entrenados
     hist_feat: pd.DataFrame,
     train_result: TrainResult,
     lags: List[int],
@@ -190,7 +190,7 @@ def forecast_horizon(
     ent_model = train_result.model_entradas
     sal_model = train_result.model_salidas
 
-    last_by_branch = (
+    last_by_branch = (      # Última fila por sucursal para iniciar predicciones
         hist_feat.sort_values(["id_sucursal","fecha"])
                  .groupby("id_sucursal", observed=False)
                  .tail(1)
@@ -205,7 +205,7 @@ def forecast_horizon(
 
     start_date = hist_feat["fecha"].max()
 
-    for h in range(1, horizon+1):
+    for h in range(1, horizon+1):   # iteración por cada día del horizonte
         day = start_date + pd.Timedelta(days=h)
         step_df = _advance_day_features(current_state, day, lags, mas)
 

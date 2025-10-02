@@ -1,6 +1,6 @@
 # Configuración global y constantes
 
-RANGOS = {
+RANGOS = {              # Arreglo de rangos por tipo de sucursal
     "captadora": {
         "A": (10000, 35000),
         "B": (15000, 50000),
@@ -16,9 +16,11 @@ RANGOS = {
         "E": (240000, 600000),
     },
 }
-
+#Arreglo de columnas requeridas en los archivos de entrada
 COLUMNAS_RECIENTES_REQUERIDAS = {
     "fecha", "id_sucursal", "saldo_final", "es_captadora",
     "entradas", "salidas", "flujo_efectivo"
 }
+
+#Arreglo de columnas requeridas en los archivos de flujo futuro
 COLUMNAS_FUTURO_REQUERIDAS = {"fecha", "id_sucursal", "flujo_efectivo"}
