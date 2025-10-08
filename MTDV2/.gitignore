@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.egg-info/
+.eggs/
+
+# Virtual env
+.venv/
+venv/
+ENV/
+env/
+*.env
+.env
+
+# Jupyter / Streamlit cache
+.ipynb_checkpoints/
+.streamlit/
+**/.DS_Store
+
+# Logs
+*.log
+
+# VS Code / PyCharm / IDEs
+.vscode/
+.idea/
+
+# OS basura
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+*.tar
