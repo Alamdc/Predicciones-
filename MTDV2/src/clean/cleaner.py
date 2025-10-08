@@ -79,7 +79,7 @@ def _add_lags_ma(df: pd.DataFrame,
     for L in sorted(set(lags)):
         df[f"flujo_lag_{L}"] = g["flujo_efectivo"].shift(L)
 
-    # Medias móviles (usamos shift(1) para no meter leakage del día actual)
+    # Medias móviles 
     for W in sorted(set(mas)):
         df[f"flujo_ma_{W}"] = g["flujo_efectivo"].shift(1).rolling(W, min_periods=max(2, W//2)).mean()
 
@@ -132,7 +132,6 @@ def clean_base_data(raw: pd.DataFrame) -> pd.DataFrame:
 def select_columns_for_output(df: pd.DataFrame) -> pd.DataFrame:
     """
     Selección final de columnas para guardar/mostrar.
-    Ajusta a tu gusto.
     """
     keep = [
         "edo","adm","sucursal","fecha","dia","fecha_dia",

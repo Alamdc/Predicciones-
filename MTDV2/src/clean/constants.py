@@ -3,7 +3,7 @@ COLUMNS_TO_DROP = [
     "sumingresos", "sumegresos", "importe_meta", "sedesol",
 ]
 
-# Renombrados (tu indicación “cambiarás extent, extsal” la interpreto como renombrar)
+# Renombrados 
 RENAME_MAP = {
     "extent": "ext_dep",
     "extsal": "ext_ret"
@@ -13,12 +13,12 @@ RENAME_MAP = {
 INCOME_COLS = [
     "deposito", "corresponsaliadep", "internain",
     "gne", "gnp", "terceros", "granusuario", "tele",
-    # Si quieres considerar "ext_dep" como ingreso, agrega "ext_dep" aquí.
+    # Si quieres considerar "ext_dep" como ingreso, agrega "ext_dep" .
 ]
 
 EXPENSE_COLS = [
     "retiro", "corresponsaliaret", "internaleg", "terceropago",
-    # Si quieres considerar "ext_ret" como egreso, agrega "ext_ret" aquí.
+    # Si quieres considerar "ext_ret" como egreso, agrega "ext_ret" 
 ]
 
 # Lags y ventanas de medias móviles para flujo_efectivo
