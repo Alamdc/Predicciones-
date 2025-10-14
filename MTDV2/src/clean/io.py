@@ -37,23 +37,45 @@ def fetch_base_data(edo_min: int, edo_max: int, adm_min: int, adm_max: int) -> p
 
 def write_cleaned_to_db(df_clean: pd.DataFrame):
     """
-    Escribe el dataframe limpio en Postgres:
-      schema = data
-      tabla  = base_filtrada
-      modo   = append
+    data.base_filtrada, y luego inserta df_clean (append).
     """
     engine = get_engine()
     if engine is None:
         return False, "No hay engine de base de datos"
 
+    # Validaciones 
+    for col in ("edo", "adm"):
+        if col not in df_clean.columns:
+            return False, f"Falta columna obligatoria en df_clean: {col}"
+    if df_clean.empty:
+        return False, "DataFrame vacío; no hay qué subir"
+
     try:
-        df_clean.to_sql(
-            name="base_filtrada",
-            schema="data",
-            con=engine,
-            if_exists="append",
-            index=False
-        )
+        edo_min, edo_max = int(df_clean["edo"].min()), int(df_clean["edo"].max())
+        adm_min, adm_max = int(df_clean["adm"].min()), int(df_clean["adm"].max())
+
+        with engine.begin() as conn:
+            # 1) Eliminar registros previos del mismo rango
+            conn.execute(
+                text("""
+                    DELETE FROM data.base_filtrada
+                    WHERE edo BETWEEN :edo_min AND :edo_max
+                      AND adm BETWEEN :adm_min AND :adm_max
+                """),
+                {"edo_min": edo_min, "edo_max": edo_max,
+                 "adm_min": adm_min, "adm_max": adm_max}
+            )
+
+            # 2) Insertar nuevos registros
+            df_clean.to_sql(
+                name="base_filtrada",
+                schema="data",
+                con=conn,
+                if_exists="append",
+                index=False
+            )
+
         return True, None
+
     except Exception as e:
         return False, str(e)

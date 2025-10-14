@@ -20,6 +20,6 @@ section.main > div.block-container {padding-top: 0.5rem;}
 /* Separador bajo la navbar */
 .nav-divider {
     border: 0;
-    border-top: 1px solid rgba(0,0,0,0.08);
+    border-top: 1px solid rgba(0,0,0,0.08); 
     margin: 0.2rem 0 0.8rem 0;
 }

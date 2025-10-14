@@ -7,7 +7,7 @@ import streamlit as st
 
 load_dotenv()  # Carga variables del archivo .env
 
-def get_engine():   # Crea y devuelve un motor de SQLAlchemy para conectarse a la base de datos Postgres
+def get_engine():
     try:
         conn_str = (
             f"postgresql+psycopg2://{os.environ['DB_USER']}:{os.environ['DB_PASS']}"
@@ -31,10 +31,3 @@ def run_query(query: str, params: dict = None) -> pd.DataFrame:
     except Exception as e:
         st.error(f"Error ejecutando la consulta: {e}")
         return pd.DataFrame()
-
-
-"""from src.db.db import run_query
-df = run_query("SELECT * FROM data.data_base LIMIT 10;")
-
-if not df.empty:
-    st.dataframe(df)"""

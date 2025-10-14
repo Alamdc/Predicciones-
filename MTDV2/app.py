@@ -25,4 +25,3 @@ st.markdown(
     - Asignar rangos por sucursal y calcular fecha/monto de transferencia.
     """
 )
-

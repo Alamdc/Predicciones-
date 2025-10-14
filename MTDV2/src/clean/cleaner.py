@@ -148,3 +148,64 @@ def select_columns_for_output(df: pd.DataFrame) -> pd.DataFrame:
     ]
     exist = [c for c in keep if c in df.columns]
     return df[exist].copy()
+
+
+def to_base_filtrada_schema(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+
+    # 1) fecha: usar fecha_dia como fecha (DATE)
+    if "fecha_dia" in out.columns:
+        out["fecha"] = pd.to_datetime(out["fecha_dia"]).dt.date
+    else:
+        out["fecha"] = pd.NaT
+
+    # 2) entradas/salidas
+    if "ingresos_total" in out.columns:
+        out["entradas"] = out["ingresos_total"]
+    else:
+        out["entradas"] = 0.0
+
+    if "egresos_total" in out.columns:
+        out["salidas"] = out["egresos_total"]
+    else:
+        out["salidas"] = 0.0
+
+    # 3) calendario: renombrar sin tildes
+    rename_map = {
+        "semana_año": "semana_anio",
+        "año": "anio",
+        # medias móviles y lags:
+        "flujo_ma_3": "media_movil_3",
+        "flujo_ma_5": "media_movil_5",
+        "flujo_ma_10": "media_movil_10",
+        "flujo_ma_14": "media_movil_14",
+        "flujo_lag_1": "lag_1",
+        "flujo_lag_2": "lag_2",
+        "flujo_lag_3": "lag_3",
+        "flujo_lag_5": "lag_5",
+    }
+    cols_to_rename = {k: v for k, v in rename_map.items() if k in out.columns}
+    out = out.rename(columns=cols_to_rename)
+
+    # 4) seleccionar y reordenar EXACTO como la tabla
+    ordered = [
+        "edo","adm","sucursal","fecha","dia",
+        "entradas","salidas","flujo_efectivo",
+        "dia_semana","semana_anio","mes","anio","trimestre",
+        "media_movil_3","media_movil_5","media_movil_10","media_movil_14",
+        "lag_1","lag_2","lag_3","lag_5",
+    ]
+    exist = [c for c in ordered if c in out.columns]
+    out = out[exist].copy()
+
+    # 5) redondear números a 2 decimales donde aplica
+    num_cols_2d = [
+        "entradas","salidas","flujo_efectivo",
+        "media_movil_3","media_movil_5","media_movil_10","media_movil_14",
+        "lag_1","lag_2","lag_3","lag_5",
+    ]
+    for c in num_cols_2d:
+        if c in out.columns:
+            out[c] = pd.to_numeric(out[c], errors="coerce").round(2)
+
+    return out
